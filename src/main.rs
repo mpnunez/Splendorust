@@ -1,20 +1,54 @@
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use rand::rngs::ThreadRng;
+use std::collections::HashMap;
+
+const JOKER: &str = "joker";
 
 fn main() {
     println!("Hello, world!");
     let mut rng = thread_rng();
+
+    let mut cost: HashMap<String, i32> = HashMap::new();
+
+    // Insert key-value pairs
+    cost.insert(String::from("red"), 1);
+    cost.insert(String::from("blue"), 2);
+    cost.insert(String::from("green"), 3);
+
+    let mut bank: HashMap<String, i32> = HashMap::new();
+
+    // Insert key-value pairs
+    bank.insert(String::from("red"), 1);
+    bank.insert(String::from("blue"), 1);
+    bank.insert(String::from("green"), 1);
+
+    let mut bank2: HashMap<String, i32> = HashMap::new();
+
+    // Insert key-value pairs
+    bank2.insert(String::from("red"), 4);
+    bank2.insert(String::from("blue"), 4);
+    bank2.insert(String::from("green"), 4);
 }
 
-struct Cost {
-    points: i32,
-    coins: Vec<i32>, // Assuming coins are represented as integers
+
+trait Amount {
+    fn get_amount(&self, color: &str) -> i32;
+    fn can_afford(&self, cost: &impl Amount) -> bool;
+}
+
+impl Amount for HashMap<String, i32> {
+    fn get_amount(&self, color: &str) -> i32 {
+        self.get(color).unwrap_or(&0).clone()
+    }
+    fn can_afford(&self, cost: &impl Amount) -> bool {
+        return false;
+    }
 }
 
 struct Card {
     points: i32,
-    cost: Cost,
+    //cost: impl Amount,
 }
 
 trait Deck {
@@ -35,13 +69,6 @@ impl Deck for Vec<Card> {
 struct CardTier {
     pub cards_for_purchase: Vec<Card>,
 }
-
-// trait Cost {
-//     fn is_affordable(&self, player: &Player) -> bool {
-//         // Check if the cost can be afforded by the player
-//         true // Placeholder implementation
-//     }
-// }
 
 trait Player {
     fn buy_card(&self, card: &Card) -> Result<(), String> {
