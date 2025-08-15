@@ -7,28 +7,7 @@ const JOKER: &str = "joker";
 
 fn main() {
     println!("Hello, world!");
-    let mut rng = thread_rng();
-
-    let mut cost: HashMap<String, i32> = HashMap::new();
-
-    // Insert key-value pairs
-    cost.insert(String::from("red"), 1);
-    cost.insert(String::from("blue"), 2);
-    cost.insert(String::from("green"), 3);
-
-    let mut bank: HashMap<String, i32> = HashMap::new();
-
-    // Insert key-value pairs
-    bank.insert(String::from("red"), 1);
-    bank.insert(String::from("blue"), 1);
-    bank.insert(String::from("green"), 1);
-
-    let mut bank2: HashMap<String, i32> = HashMap::new();
-
-    // Insert key-value pairs
-    bank2.insert(String::from("red"), 4);
-    bank2.insert(String::from("blue"), 4);
-    bank2.insert(String::from("green"), 4);
+    
 }
 
 
@@ -99,5 +78,39 @@ impl GameState {
     fn is_terminaal(&self) -> bool {
         // Check if the game has ended
         false // Placeholder implementation
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn generate_possible_moves() {
+        let mut rng = thread_rng();
+
+        let mut cost: HashMap<String, i32> = HashMap::new();
+
+        // Insert key-value pairs
+        cost.insert(String::from("red"), 1);
+        cost.insert(String::from("blue"), 2);
+        cost.insert(String::from("green"), 3);
+
+        assert_eq!(cost.get_amount("red"), 1);
+        assert_eq!(cost.get_amount("black"), 0);
+
+        // let mut bank: HashMap<String, i32> = HashMap::new();
+
+        // // Insert key-value pairs
+        // bank.insert(String::from("red"), 1);
+        // bank.insert(String::from("blue"), 1);
+        // bank.insert(String::from("green"), 1);
+
+        // let mut bank2: HashMap<String, i32> = HashMap::new();
+
+        // // Insert key-value pairs
+        // bank2.insert(String::from("red"), 4);
+        // bank2.insert(String::from("blue"), 4);
+        // bank2.insert(String::from("green"), 4);
     }
 }
