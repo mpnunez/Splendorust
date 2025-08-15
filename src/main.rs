@@ -14,6 +14,7 @@ fn main() {
 trait Amount {
     fn get_amount(&self, color: &str) -> i32;
     fn can_afford(&self, cost: &impl Amount) -> bool;
+    fn iter(&self) -> impl Iterator<Item = (&String, &i32)>;
 }
 
 impl Amount for HashMap<String, i32> {
@@ -21,7 +22,15 @@ impl Amount for HashMap<String, i32> {
         self.get(color).unwrap_or(&0).clone()
     }
     fn can_afford(&self, cost: &impl Amount) -> bool {
-        return false;
+        for (color, value) in cost.iter() {
+            if self.get_amount(color) < *value {
+                return false;
+            }
+        }
+        return true;
+    }
+    fn iter(&self) -> impl Iterator<Item = (&String, &i32)> {
+        self.iter()
     }
 }
 
@@ -99,18 +108,22 @@ mod tests {
         assert_eq!(cost.get_amount("red"), 1);
         assert_eq!(cost.get_amount("black"), 0);
 
-        // let mut bank: HashMap<String, i32> = HashMap::new();
+        let mut bank: HashMap<String, i32> = HashMap::new();
 
-        // // Insert key-value pairs
-        // bank.insert(String::from("red"), 1);
-        // bank.insert(String::from("blue"), 1);
-        // bank.insert(String::from("green"), 1);
+        // Insert key-value pairs
+        bank.insert(String::from("red"), 1);
+        bank.insert(String::from("blue"), 1);
+        bank.insert(String::from("green"), 1);
 
-        // let mut bank2: HashMap<String, i32> = HashMap::new();
+        assert!(!bank.can_afford(&cost));
 
-        // // Insert key-value pairs
-        // bank2.insert(String::from("red"), 4);
-        // bank2.insert(String::from("blue"), 4);
-        // bank2.insert(String::from("green"), 4);
+        let mut bank2: HashMap<String, i32> = HashMap::new();
+
+        // Insert key-value pairs
+        bank2.insert(String::from("red"), 4);
+        bank2.insert(String::from("blue"), 4);
+        bank2.insert(String::from("green"), 4);
+
+        assert!(bank2.can_afford(&cost));
     }
 }
