@@ -13,24 +13,20 @@ fn main() {
 
 trait Amount {
     fn get_amount(&self, color: &str) -> i32;
-    fn can_afford(&self, cost: &impl Amount) -> bool;
-    fn iter(&self) -> impl Iterator<Item = (&String, &i32)>;
+    fn can_be_afforded_by(&self, cost: &impl Amount) -> bool;
 }
 
 impl Amount for HashMap<String, i32> {
     fn get_amount(&self, color: &str) -> i32 {
         self.get(color).unwrap_or(&0).clone()
     }
-    fn can_afford(&self, cost: &impl Amount) -> bool {
-        for (color, value) in cost.iter() {
-            if self.get_amount(color) < *value {
+    fn can_be_afforded_by(&self, bank: &impl Amount) -> bool {
+        for (color, value) in self.iter() {
+            if bank.get_amount(color) < *value {
                 return false;
             }
         }
         return true;
-    }
-    fn iter(&self) -> impl Iterator<Item = (&String, &i32)> {
-        self.iter()
     }
 }
 
@@ -115,7 +111,7 @@ mod tests {
         bank.insert(String::from("blue"), 1);
         bank.insert(String::from("green"), 1);
 
-        assert!(!bank.can_afford(&cost));
+        assert!(!cost.can_be_afforded_by(&bank));
 
         let mut bank2: HashMap<String, i32> = HashMap::new();
 
@@ -124,6 +120,6 @@ mod tests {
         bank2.insert(String::from("blue"), 4);
         bank2.insert(String::from("green"), 4);
 
-        assert!(bank2.can_afford(&cost));
+        assert!(bank2.can_be_afforded_by(&bank2));
     }
 }
