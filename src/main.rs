@@ -6,7 +6,37 @@ use std::collections::HashMap;
 const JOKER: &str = "joker";
 
 fn main() {
-    println!("Hello, world!");
+
+    // make a player
+    let player = RandomPlayer{};
+
+    // give player a bank
+    let mut bank: HashMap<String, i32> = HashMap::new();
+    bank.insert(String::from("red"), 1);
+    bank.insert(String::from("blue"), 1);
+    bank.insert(String::from("green"), 1);
+    bank.insert(String::from("black"), 1);
+    bank.insert(String::from("white"), 1);
+
+
+    // make a card
+    let mut cost: HashMap<String, i32> = HashMap::new();
+    cost.insert(String::from("red"), 1);
+    cost.insert(String::from("blue"), 2);
+    cost.insert(String::from("green"), 3);
+
+    // make a card with the cost
+    let card = Card {
+        points: 1,
+        cost: cost,
+        discount_provided: HashMap::new(),
+    };
+
+    // try to buy the card
+    //match player.buy_card(&card) {
+    //    Ok(_) => println!("Player bought the card!"),
+    //    Err(e) => println!("Player could not buy the card: {}", e),
+    //}
     
 }
 
@@ -15,7 +45,9 @@ trait Amount {
     fn get_amount(&self, color: &str) -> i32;
     fn can_be_afforded_by(&self, cost: &impl Amount) -> bool;
     fn add(&self, other: &Self) -> Self;
+    fn add_to(&mut self, other: &Self);
     fn sub(&self, other: &Self) -> Self;
+    fn sub_from(&mut self, other: &Self);
 }
 
 impl Amount for HashMap<String, i32> {
@@ -50,7 +82,7 @@ impl Amount for HashMap<String, i32> {
 struct Card<T: Amount> {
     points: i32,
     cost: T,
-    color: String,
+    discount_provided: T,
 }
 
 trait Deck<T: Amount> {
@@ -98,7 +130,7 @@ struct GameState {
 }
 
 impl GameState {
-    fn is_terminaal(&self) -> bool {
+    fn is_terminal(&self) -> bool {
         // Check if the game has ended
         false // Placeholder implementation
     }
