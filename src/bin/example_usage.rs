@@ -109,19 +109,24 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use super::*;
-/*
+
     #[test]
     fn create_decks () {
-        let deck1 = read_cards_of_level("cards.csv",1);
-        assert_eq!(deck1.len(),40);
-        let deck2 = read_cards_of_level("cards.csv",2);
-        assert_eq!(deck2.len(),30);
-        let deck3 = read_cards_of_level("cards.csv",3);
-        assert_eq!(deck3.len(),20);
-        let nobles = read_cards_of_level("cards.csv",0);
-        assert_eq!(nobles.len(),9);
-    }
 
+        let cards = read_cards_from_csv("cards.csv").unwrap();
+
+        let tier1 = cards.iter().filter(|c| c.tier == 1);
+        let tier2 = cards.iter().filter(|c| c.tier == 2);
+        let tier3 = cards.iter().filter(|c| c.tier == 3);
+        let nobles = cards.iter().filter(|c| c.tier == 0);
+
+        assert_eq!(cards.len(), 99);
+        assert_eq!(tier1.count(), 40);
+        assert_eq!(tier2.count(), 30);
+        assert_eq!(tier3.count(), 20);
+        assert_eq!(nobles.count(), 9);
+    }
+/*
     #[test]
     fn test_count_csv_column_values() {
         let result = count_csv_column_values("cards.csv").expect("Failed to read CSV");
