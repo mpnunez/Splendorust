@@ -10,6 +10,15 @@ struct Card {
     tier: u8,
 }
 
+struct Player {
+    name: String,
+    points: i32,
+    tokens: HashMap<String, i32>,
+    discounts: HashMap<String, i32>,
+    owned_cards: Vec<Card>,
+    reserved_cards: Vec<Card>,
+}
+
 // Function to read cards from CSV file
 fn read_cards_from_csv(fname: &str) -> Result<Vec<Card>, Box<dyn Error>> {
     let mut rdr = csv::Reader::from_path(fname)?;
@@ -30,24 +39,29 @@ fn read_cards_from_csv(fname: &str) -> Result<Vec<Card>, Box<dyn Error>> {
         
         // Process each field in the record
         for (col_index, field) in record.iter().enumerate() {
-            if let Some(header) = headers.get(col_index) {
-                match header {
-                    "Tier" => {
-                        tier = field.parse::<u8>().unwrap_or(0);
-                    },
-                    "Color" => {
-                        color = field.to_string();
-                    },
-                    "PV" => {
-                        points = field.parse::<i32>().unwrap_or(0);
-                    },
-                    // All other columns go into the cost HashMap
-                    _ => {
-                        let value = field.parse::<i32>().unwrap_or(0);
-                        cost.insert(header.to_string(), value);
-                    }
+            let header_option = headers.get(col_index);
+            if header_option.is_none() {
+                continue; // Skip if no header found
+            }
+            let header = header_option.unwrap();
+
+            match header {
+                "Tier" => {
+                    tier = field.parse::<u8>().unwrap_or(0);
+                },
+                "Color" => {
+                    color = field.to_string();
+                },
+                "PV" => {
+                    points = field.parse::<i32>().unwrap_or(0);
+                },
+                // All other columns go into the cost HashMap
+                _ => {
+                    let value = field.parse::<i32>().unwrap_or(0);
+                    cost.insert(header.to_string(), value);
                 }
             }
+
         }
         
         // Create and add the card
@@ -75,16 +89,16 @@ fn main() {
             }
             
             // Print some statistics
-            let tier1_count = cards.iter().filter(|c| c.tier == 1).count();
-            let tier2_count = cards.iter().filter(|c| c.tier == 2).count();
-            let tier3_count = cards.iter().filter(|c| c.tier == 3).count();
-            let noble_count = cards.iter().filter(|c| c.tier == 0).count();
+            let tier1 = cards.iter().filter(|c| c.tier == 1);
+            let tier2 = cards.iter().filter(|c| c.tier == 2);
+            let tier3 = cards.iter().filter(|c| c.tier == 3);
+            let nobles = cards.iter().filter(|c| c.tier == 0);
             
             println!("\nCard distribution:");
-            println!("Tier 1: {} cards", tier1_count);
-            println!("Tier 2: {} cards", tier2_count);
-            println!("Tier 3: {} cards", tier3_count);
-            println!("Nobles: {} cards", noble_count);
+            println!("Tier 1: {} cards", tier1.count());
+            println!("Tier 2: {} cards", tier2.count());
+            println!("Tier 3: {} cards", tier3.count());
+            println!("Nobles: {} cards", nobles.count());
         },
         Err(e) => {
             eprintln!("Error reading cards from CSV: {}", e);
