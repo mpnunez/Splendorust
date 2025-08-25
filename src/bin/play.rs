@@ -8,7 +8,7 @@ const JOKER: &str = "joker";
 fn main() {
 
     // make a player
-    let player = RandomPlayer{};
+    //let player = RandomPlayer{};
 
     // give player a bank
     let mut bank: HashMap<String, i32> = HashMap::new();
@@ -25,12 +25,6 @@ fn main() {
     cost.insert(String::from("blue"), 2);
     cost.insert(String::from("green"), 3);
 
-    // make a card with the cost
-    let card = Card {
-        points: 1,
-        cost: cost,
-        discount_provided: HashMap::new(),
-    };
 
     // try to buy the card
     //match player.buy_card(&card) {

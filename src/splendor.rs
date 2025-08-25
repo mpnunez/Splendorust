@@ -9,9 +9,9 @@ trait Amount {
     fn get_amount(&self, color: &str) -> i32;
     fn can_be_afforded_by(&self, cost: &impl Amount) -> bool;
     fn add(&self, other: &Self) -> Self;
-    fn add_to(&mut self, other: &Self);
+    //fn add_to(&mut self, other: &Self);
     fn sub(&self, other: &Self) -> Self;
-    fn sub_from(&mut self, other: &Self);
+    //fn sub_from(&mut self, other: &Self);
 }
 
 impl Amount for HashMap<String, i32> {
