@@ -49,6 +49,11 @@ impl Player {
         true
     }
 
+    fn acquire_token(&mut self, color: &str) {
+        let entry = self.tokens.entry(color.to_string()).or_insert(0);
+        *entry += 1;
+    }
+
     fn buy_card(&mut self, card: &Card) -> Result<(), String> {
         if !self.can_afford(&card.cost) {
             return Err("Cannot afford this card".to_string());
@@ -153,6 +158,23 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use rstest::rstest;
+    use rstest::fixture;
+    use std::collections::HashMap;
+
+    #[fixture]
+    pub fn card() -> Card {
+        Card {
+            points: 1,
+            color: String::from("red"),
+            tier: 1,
+            cost: HashMap::from([
+                (String::from("red"), 1),
+                (String::from("blue"), 2),
+                (String::from("green"), 1),
+            ]),
+        }
+    }
 
     #[test]
     fn test_read_csv () {
@@ -171,21 +193,23 @@ mod tests {
         assert_eq!(nobles.count(), 9);
     }
 
+    #[rstest]
     #[test]
-    fn test_buy_card () {
+    fn test_cannot_buy_card (card: Card) {
 
         let mut marcel = Player::new("Marcel");
-        let card = Card {
-            points: 1,
-            color: String::from("red"),
-            tier: 1,
-            cost: HashMap::from([
-                (String::from("red"), 1),
-                (String::from("blue"), 2),
-                (String::from("green"), 1),
-            ]),
-        };
         assert!(marcel.buy_card(&card).is_err());
+    }
+
+    #[rstest]
+    #[test]
+    fn test_buy_card (card: Card) {
+        let mut kun = Player::new("Kun");
+        kun.acquire_token("red");
+        kun.acquire_token("blue");
+        kun.acquire_token("blue");
+        kun.acquire_token("green");
+        assert!(kun.buy_card(&card).is_ok());
     }
 
 }
