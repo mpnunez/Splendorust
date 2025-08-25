@@ -19,6 +19,53 @@ struct Player {
     reserved_cards: Vec<Card>,
 }
 
+impl Player {
+    fn new(name: &str) -> Self {
+        Player {
+            name: name.to_string(),
+            points: 0,
+            tokens: HashMap::new(),
+            discounts: HashMap::new(),
+            owned_cards: vec![],
+            reserved_cards: vec![],
+        }
+    }
+
+    fn total_discount(&self, color: &str) -> i32 {
+        *self.discounts.get(color).unwrap_or(&0)
+    }
+
+    fn total_tokens(&self, color: &str) -> i32 {
+        *self.tokens.get(color).unwrap_or(&0)
+    }
+
+    fn can_afford(&self, cost: &HashMap<String, i32>) -> bool {
+        for (color, &amount) in cost.iter() {
+            let total_available = self.total_tokens(color) + self.total_discount(color);
+            if total_available < amount {
+                return false;
+            }
+        }
+        true
+    }
+
+    fn buy_card(&mut self, card: &Card) -> Result<(), String> {
+        if !self.can_afford(&card.cost) {
+            return Err("Cannot afford this card".to_string());
+        }
+        // Deduct tokens (not handling joker logic here for simplicity)
+        for (color, &amount) in card.cost.iter() {
+            let entry = self.tokens.entry(color.clone()).or_insert(0);
+            *entry -= amount;
+        }
+        self.points += card.points;
+        self.owned_cards.push(card.clone());
+        let discount_entry = self.discounts.entry(card.color.clone()).or_insert(0);
+        *discount_entry += 1;
+        Ok(())
+    }
+}
+
 // Function to read cards from CSV file
 fn read_cards_from_csv(fname: &str) -> Result<Vec<Card>, Box<dyn Error>> {
     let mut rdr = csv::Reader::from_path(fname)?;
@@ -78,32 +125,29 @@ fn read_cards_from_csv(fname: &str) -> Result<Vec<Card>, Box<dyn Error>> {
 }
 
 fn main() {
-    match read_cards_from_csv("cards.csv") {
-        Ok(cards) => {
-            println!("Successfully read {} cards from CSV", cards.len());
-            
-            // Print first few cards as examples
-            for (i, card) in cards.iter().take(5).enumerate() {
-                println!("Card {}: Tier={}, Color={}, Points={}, Cost={:?}", 
-                         i + 1, card.tier, card.color, card.points, card.cost);
-            }
-            
-            // Print some statistics
-            let tier1 = cards.iter().filter(|c| c.tier == 1);
-            let tier2 = cards.iter().filter(|c| c.tier == 2);
-            let tier3 = cards.iter().filter(|c| c.tier == 3);
-            let nobles = cards.iter().filter(|c| c.tier == 0);
-            
-            println!("\nCard distribution:");
-            println!("Tier 1: {} cards", tier1.count());
-            println!("Tier 2: {} cards", tier2.count());
-            println!("Tier 3: {} cards", tier3.count());
-            println!("Nobles: {} cards", nobles.count());
-        },
-        Err(e) => {
-            eprintln!("Error reading cards from CSV: {}", e);
-        }
+    let cards = read_cards_from_csv("cards.csv").expect("Failed to read cards from CSV");
+    println!("Successfully read {} cards from CSV", cards.len());
+    
+    // Print first few cards as examples
+    for (i, card) in cards.iter().take(5).enumerate() {
+        println!("Card {}: Tier={}, Color={}, Points={}, Cost={:?}", 
+                    i + 1, card.tier, card.color, card.points, card.cost);
     }
+
+    let mut decks: Vec<Vec<Card>> = vec![];
+    for tier in 1..=3 {
+        let mut deck: Vec<Card> = cards.iter().filter(|c| c.tier == tier).cloned().collect();
+        use rand::seq::SliceRandom;
+        use rand::thread_rng;
+        let mut rng = thread_rng();
+        deck.shuffle(&mut rng);
+        decks.push(deck);
+    }
+
+    let nobles = cards.iter().filter(|c| c.tier == 0);
+
+    let mut marcel = Player::new("Marcel");
+    let mut kun = Player::new("Kun");
 }
 
 #[cfg(test)]
@@ -111,7 +155,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn create_decks () {
+    fn test_read_csv () {
 
         let cards = read_cards_from_csv("cards.csv").unwrap();
 
@@ -126,34 +170,22 @@ mod tests {
         assert_eq!(tier3.count(), 20);
         assert_eq!(nobles.count(), 9);
     }
-/*
+
     #[test]
-    fn test_count_csv_column_values() {
-        let result = count_csv_column_values("cards.csv").expect("Failed to read CSV");
-        
-        // Should have 8 columns (Level, Color, PV, Black, Blue, Green, Red, White)
-        assert_eq!(result.len(), 8);
-        
-        // Column 0 (Level) should have counts for levels 0, 1, 2, 3
-        let level_counts = &result[0];
-        assert!(level_counts.contains_key("0")); // Noble cards
-        assert!(level_counts.contains_key("1")); // Level 1 cards
-        assert!(level_counts.contains_key("2")); // Level 2 cards
-        assert!(level_counts.contains_key("3")); // Level 3 cards
-        
-        // Column 1 (Color) should be empty since it contains strings, not integers
-        let color_counts = &result[1];
-        assert!(color_counts.is_empty());
-        
-        // Column 2 (PV) should have various point values
-        let pv_counts = &result[2];
-        assert!(pv_counts.contains_key("0")); // Cards with 0 points
-        assert!(pv_counts.contains_key("1")); // Cards with 1 point
-        
-        // Verify we have the expected total number of level 1 cards (40)
-        assert_eq!(level_counts.get("1").unwrap_or(&0), &40);
-        
-        println!("Column counts: {:?}", result);
+    fn test_buy_card () {
+
+        let mut marcel = Player::new("Marcel");
+        let card = Card {
+            points: 1,
+            color: String::from("red"),
+            tier: 1,
+            cost: HashMap::from([
+                (String::from("red"), 1),
+                (String::from("blue"), 2),
+                (String::from("green"), 1),
+            ]),
+        };
+        assert!(marcel.buy_card(&card).is_err());
     }
-*/
+
 }
