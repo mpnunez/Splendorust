@@ -1,0 +1,33 @@
+use std::error::Error;
+
+use splendorust::cards::{Card, read_cards_from_csv};
+use splendorust::player::Player;
+
+
+fn main() {
+    let cards = read_cards_from_csv("cards.csv").expect("Failed to read cards from CSV");
+    println!("Successfully read {} cards from CSV", cards.len());
+    
+    // Print first few cards as examples
+    for (i, card) in cards.iter().take(5).enumerate() {
+        println!("Card {}: Tier={}, Color={}, Points={}, Cost={:?}", 
+                    i + 1, card.tier, card.color, card.points, card.cost);
+    }
+
+    let mut decks: Vec<Vec<Card>> = vec![];
+    for tier in 1..=3 {
+        let mut deck: Vec<Card> = cards.iter().filter(|c| c.tier == tier).cloned().collect();
+        use rand::seq::SliceRandom;
+        use rand::thread_rng;
+        let mut rng = thread_rng();
+        deck.shuffle(&mut rng);
+        decks.push(deck);
+    }
+
+    let nobles = cards.iter().filter(|c| c.tier == 0);
+
+    let mut marcel = Player::new("Marcel");
+    let mut kun = Player::new("Kun");
+}
+
+
