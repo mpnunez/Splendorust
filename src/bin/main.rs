@@ -1,8 +1,5 @@
-use std::error::Error;
-
 use splendorust::cards::{Card, read_cards_from_csv};
-use splendorust::player::Player;
-
+use splendorust::state::GameState;
 
 fn main() {
     let cards = read_cards_from_csv("cards.csv").expect("Failed to read cards from CSV");
@@ -25,9 +22,14 @@ fn main() {
     }
 
     let nobles = cards.iter().filter(|c| c.tier == 0);
+    let gem_cards = cards.iter().filter(|c| c.tier > 0);
 
-    let mut marcel = Player::new("Marcel");
-    let mut kun = Player::new("Kun");
+    let game_state = GameState::new(
+        vec!["Marcel", "Kun"],
+        gem_cards.cloned().collect(),
+        nobles.cloned().collect()
+    );
+
 }
 
 
