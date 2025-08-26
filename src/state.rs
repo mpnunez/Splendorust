@@ -99,9 +99,34 @@ impl GameState {
         &mut self.players[self.current_turn]
     }
 
-    fn refresh_tiers(&mut self) {
+    pub fn refresh_tiers(&mut self) {
         for tier in &mut self.tiers {
             tier.refresh_cards();
+        }
+    }
+
+    pub fn show_state(&self) {
+        println!("Current Round: {}, Current Turn: {}", self.current_round, self.current_turn);
+        for (i, player) in self.players.iter().enumerate() {
+            println!("Player {}: {:?}", i + 1, player);
+        }
+        for tier in &self.tiers {
+            println!("Tier {}: Available Cards:", tier.tier);
+            for (i, card_option) in tier.cards_for_purchase.iter().enumerate() {
+                if let Some(card) = card_option {
+                    println!("  Slot {}: {:?}", i + 1, card);
+                } else {
+                    println!("  Slot {}: Empty", i + 1);
+                }
+            }
+        }
+        println!("Nobles Available:");
+        for noble in &self.nobles {
+            println!("  {:?}", noble);
+        }
+        println!("Bank Tokens:");
+        for (color, &amount) in &self.bank {
+            println!("  {}: {}", color, amount);
         }
     }
 }
