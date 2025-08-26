@@ -1,16 +1,18 @@
+use std::collections::HashMap;
+use rand::seq::SliceRandom;
+use rand::thread_rng;
+
 use crate::cards::Card;
 use crate::player::Player;
-use std::collections::HashMap;
 
 const MAX_PLAYERS: usize = 4;
 const MIN_PLAYERS: usize = 2;
 const INITIAL_TOKENS: i32 = 7;
 const MAX_TOKENS_PER_COLOR: i32 = 10;
-const NUM_CARDS_FOR_PURCHASE: usize = 4; // for each tiers
+const NUM_CARDS_FOR_PURCHASE: usize = 4; // for each tier
 const NUM_NOBLES: usize = 5;
 const WINNING_POINTS: i32 = 15;
 const COLORS: [&str; 6] = ["red", "blue", "green", "black", "white", "joker"];
-const NUM_TIERS: usize = 3;
 
 /* Deck of cards for a specific tier, along with the cards currently available for purchase */
 struct Tier {
@@ -39,6 +41,13 @@ impl Tier {
     }
 }
 
+enum Action {
+    AcquireTokens(Vec<String>), // Colors of tokens to acquire
+    ReserveCard(Option<Card>),  // Card to reserve (None for random)
+    BuyCard(Card),              // Card to buys
+    Pass(()),                   // Pass turns
+}
+
 pub struct GameState {
     players: Vec<Player>,
     current_round: usize,
@@ -49,18 +58,25 @@ pub struct GameState {
 }
 
 impl GameState {
-    pub fn new(player_names: Vec<&str>, decks: Vec<Card>, nobles: Vec<Card>) -> Self {
+    pub fn new(player_names: Vec<&str>, mut cards: Vec<Card>, nobles: Vec<Card>) -> Self {
         let players = player_names.into_iter().map(|name| Player::new(name)).collect();
         let mut bank = HashMap::new();
         for color in &["red", "blue", "green", "black", "white", "joker"] {
             bank.insert(color.to_string(), INITIAL_TOKENS);
         }
+        let max_tier = cards.iter().map(|c| c.tier).max().unwrap_or(0);
+        let mut decks: Vec<Vec<Card>> = vec![];
+
+        let mut rng = thread_rng();
+        cards.shuffle(&mut rng);
+
+
         GameState {
             players,
             current_round: 0,
             current_turn: 0,
-            tiers: (1..=NUM_TIERS as u8).map(|tier| {
-                let tier_deck: Vec<Card> = decks.iter().filter(|c| c.get_tier() == tier).cloned().collect();
+            tiers: (1..=max_tier as u8).map(|tier| {
+                let tier_deck: Vec<Card> = cards.iter().filter(|c| c.get_tier() == tier).cloned().collect();
                 Tier::new(tier, tier_deck)
             }).collect(),
             nobles,

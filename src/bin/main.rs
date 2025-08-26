@@ -11,16 +11,7 @@ fn main() {
                     i + 1, card.tier, card.color, card.points, card.cost);
     }
 
-    let mut decks: Vec<Vec<Card>> = vec![];
-    for tier in 1..=3 {
-        let mut deck: Vec<Card> = cards.iter().filter(|c| c.tier == tier).cloned().collect();
-        use rand::seq::SliceRandom;
-        use rand::thread_rng;
-        let mut rng = thread_rng();
-        deck.shuffle(&mut rng);
-        decks.push(deck);
-    }
-
+    // Separate nobles and gem cards
     let nobles = cards.iter().filter(|c| c.tier == 0);
     let gem_cards = cards.iter().filter(|c| c.tier > 0);
 
